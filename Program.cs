@@ -1,16 +1,20 @@
 using top5.db;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options => options.SerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(opt =>
+{
+    opt.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
 
-builder.Services.AddDbContext<top5Context>(options =>
+builder.Services.AddDbContext<top5Context>(opt =>
 {
     string cs = builder.Configuration.GetConnectionString("top5Connection");
     var version = ServerVersion.AutoDetect(cs);
-    options.UseMySql(cs, version);
+    opt.UseMySql(cs, version);
 });
 
 builder.Services.AddSwaggerGen();
@@ -28,7 +32,7 @@ if (app.Environment.IsDevelopment())
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-app.MapGet("/api/Tops", (string? titulo, top5Context _db) =>
+app.MapGet("/api/Tops", ([FromQuery] string? titulo, [FromServices] top5Context _db) =>
 {
     // Obtém todos os tops que contém o título indicado
     // ou todos, se não for indicado nenhum
@@ -41,7 +45,7 @@ app.MapGet("/api/Tops", (string? titulo, top5Context _db) =>
     return Results.Ok(tops);
 });
 
-app.MapGet("/api/Tops/{id}", ([FromRoute] string id, top5Context _db) =>
+app.MapGet("/api/Tops/{id}", ([FromRoute] string id, [FromServices] top5Context _db) =>
 {
     // Obtém um top que possua o id indicado
     var top = _db.Top
@@ -58,7 +62,7 @@ app.MapGet("/api/Tops/{id}", ([FromRoute] string id, top5Context _db) =>
     return Results.Ok(top);
 });
 
-app.MapPost("/api/Tops", ([FromBody] Top topInformado, top5Context _db) =>
+app.MapPost("/api/Tops", ([FromBody] Top topInformado, [FromServices] top5Context _db) =>
 {
     if (topInformado.Id != null)
     {
@@ -87,7 +91,7 @@ app.MapPost("/api/Tops", ([FromBody] Top topInformado, top5Context _db) =>
     return Results.Created($"/api/Tops/{topInformado.Id}", topInformado);
 });
 
-app.MapPut("/api/Tops/{id}", ([FromRoute] string id, [FromBody] Top topAlterado, top5Context _db) =>
+app.MapPut("/api/Tops/{id}", ([FromRoute] string id, [FromBody] Top topAlterado, [FromServices] top5Context _db) =>
 {
     if (topAlterado.Id != id)
     {
@@ -132,7 +136,7 @@ app.MapPut("/api/Tops/{id}", ([FromRoute] string id, [FromBody] Top topAlterado,
     return Results.Ok(top);
 });
 
-app.MapMethods("/api/Tops/{id}/curtir", new[] { "PATCH" }, ([FromRoute] string id, top5Context _db) =>
+app.MapMethods("/api/Tops/{id}/curtir", new[] { "PATCH" }, ([FromRoute] string id, [FromServices] top5Context _db) =>
 {
     // Obtém um top que possua o id indicado
     var top = _db.Top
@@ -156,7 +160,7 @@ app.MapMethods("/api/Tops/{id}/curtir", new[] { "PATCH" }, ([FromRoute] string i
     return Results.Ok(retorno);
 });
 
-app.MapMethods("/api/Tops/{id}/Itens/{posicao}/curtir", new[] { "PATCH" }, ([FromRoute] string id, [FromRoute] int posicao, top5Context _db) =>
+app.MapMethods("/api/Tops/{id}/Itens/{posicao}/curtir", new[] { "PATCH" }, ([FromRoute] string id, [FromRoute] int posicao, [FromServices] top5Context _db) =>
 {
     // Obtém um top que possua o id indicado
     var top = _db.Top
@@ -189,7 +193,7 @@ app.MapMethods("/api/Tops/{id}/Itens/{posicao}/curtir", new[] { "PATCH" }, ([Fro
     return Results.Ok(retorno);
 });
 
-app.MapDelete("/api/Tops/{id}", ([FromRoute] string id, top5Context _db) =>
+app.MapDelete("/api/Tops/{id}", ([FromRoute] string id, [FromServices] top5Context _db) =>
 {
     // Obtém um top que possua o id indicado
     var top = _db.Top
