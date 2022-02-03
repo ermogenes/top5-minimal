@@ -12,7 +12,7 @@ Subir o banco rapidamente com Docker (MySQL 8.0.23):
 docker run -p 3333:3306 -e MYSQL_ROOT_PASSWORD=xxx ermogenes/top5-mysql
 ```
 
-Ou então assim, e faça a carga da estrutura e dados manualmente  (MySQL 8.0.28):
+Ou então assim, e faça a carga da [estrutura e dados](https://github.com/ermogenes/top5-mysql/blob/master/scripts/top5.sql) manualmente  (MySQL 8.0.28):
 
 ```
 docker run -p 3333:3306 -e MYSQL_ROOT_PASSWORD=xxx mysql:8.0.28
